@@ -44,8 +44,15 @@ class Algorithm3(Detector):
     shared = False
     run_on_adversaries = True     # adversaries run the honest rule internally to stay hidden
 
-    def __init__(self, f: int = 1, tol: float = 1e-9, grace: int = 1, claims: bool = True):
-        self.f, self.tol, self.grace, self.claims = f, tol, grace, claims   # claims=False: ablation, no 1a/1b
+    def __init__(self, f: int = 1, tol: float = 1e-9, grace: int = 1, claims: bool = True,
+                 claim_mode: str = "ours", two_sided: bool = False):
+        # claims=False: ablation, no 1a/1b.
+        # claim_mode="literal": Step 1a exactly as printed in the listing (no grace, no can_verify,
+        #   judged against A_i[k] U A2_i[k] AFTER this step's ID vote). Step 1b is not applied.
+        #   two_sided=True also flags j when i knows a malicious in-neighbor of j that j omits.
+        assert claim_mode in ("ours", "literal")
+        self.f, self.tol, self.grace, self.claims = f, tol, grace, claims
+        self.claim_mode, self.two_sided = claim_mode, two_sided
         self.prev: dict = {}                      # (i, j) -> Phi_j[k-2]
         self.A2: dict = defaultdict(set)          # i -> private two-hop detections
         self.strikes: dict = defaultdict(int)     # (i, j, m) -> consecutive mismatches
@@ -110,7 +117,16 @@ class Algorithm3(Detector):
                 return "honest"
             return None                               # i cannot judge m
 
-        for j, msg in (trusted.items() if self.claims else ()):
+        if self.claim_mode == "literal":
+            known_now = A_i | set(A2) | {m for m, why in flagged.items() if why == "vote"}
+            for j, msg in trusted.items():
+                if j in flagged:
+                    continue
+                D = {m for m in msg.A if m in graph.in_nbrs[j]}            # N_j^- ∩ A_j[k-1]
+                if D - known_now or (self.two_sided and (known_now & set(graph.in_nbrs[j])) - D - {j}):
+                    flagged[j] = "1a-literal"
+
+        for j, msg in (trusted.items() if (self.claims and self.claim_mode == "ours") else ()):
             if j in flagged:
                 continue
             for m in (set(graph.in_nbrs[j]) | set(graph.out_nbrs[j])) - {j}:

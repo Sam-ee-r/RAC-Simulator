@@ -61,3 +61,7 @@ Ablation (single victim, 425 runs): false flag in 425/425 for grace 0, 1, 3 and 
 Mechanism: a lone victim is the only node that sees the inconsistency, flags the attacker and reports it; the attacker's other out-neighbours see it behave normally, read the report as a lie (checks 1a/1b) and flag the honest victim. With fewer than f+1 reporters the ID vote cannot convict the attacker.
 
 Caveats: (1) outside the paper's stated threat model, so this is a gap to explore, not a refutation; (2) rests on our reading of the ambiguous Alg 3 Step 1a/1b; the literal Step 1a would probably also flag the reporter but we have not shown this; (3) no literature check yet for prior work on equivocation against this class of algorithms.
+
+### Literal Step 1a check (`experiments/literal_step1a.py`)
+
+`Algorithm3(claim_mode="literal")` applies Step 1a as printed in the listing: no grace period, no "could it verify" condition, claims judged against A_i U A2_i after the current ID vote; Step 1b is not applied. Sanity gate: the paper's own broadcast experiments (Fig 5b, 4b, 8) still end on the right average with no honest node flagged. Equivocation to a single out-neighbour then falsely flags honest nodes in 425/425 runs (8 graphs), same as our reading; on Fig 5b the first false flag is always `1a-literal`. Not tested: Step 1b, and a reading of "differs from" other than the one-sided and two-sided versions in the code. Run: `python experiments/literal_step1a.py [--sweep] [--two-sided]`.
