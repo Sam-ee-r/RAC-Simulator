@@ -7,14 +7,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from rac_sim import undirected, simulate, Algorithm2, Offset, TamperInbox
+from rac_sim import paper
 
-E5 = [(u, v) for u in range(1, 6) for v in range(u + 1, 6) if (u, v) != (1, 2)]
 BASE = [(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (4, 0), (4, 1), (5, 2), (5, 3), (4, 5)]
 X6 = [2, 9, 4, 7, 5, 1]
 collude = lambda: {4: TamperInbox(at=5, src=5, dy=6.0), 5: Offset(at=10**9)}
 
 cases = [
-    ("Paper 5-node: attacks at k=4, k=13", undirected(5, E5, one_indexed=True), [8, 6, 1, 3, 9],
+    ("Paper 5-node: attacks at k=4, k=13", paper.fig5a(), [8, 6, 1, 3, 9],
      {4: Offset(at=4, dy=5.0), 3: Offset(at=13, dy=-3.0)}, 5.0),
     ("Colluding pair, common normal neighbor", undirected(6, BASE + [(0, 5)]), X6, collude(), 23 / 5),
     ("Colluding pair, NO common neighbor", undirected(6, BASE), X6, collude(), 22 / 4),
