@@ -9,15 +9,17 @@ from matplotlib.patches import Circle, FancyArrowPatch
 BLUE, RED, AMBER, GREEN, GREY = "#3B6FD8", "#D9483B", "#D98F1F", "#2E9E6A", "#9AA3AF"
 R = 0.22
 
-E5 = [(u - 1, v - 1) for u in range(1, 6) for v in range(u + 1, 6) if (u, v) != (1, 2)]
+from rac_sim import paper
+E5 = [(u, v) for u, v in paper.fig5a().edges if u < v]
 BASE = [(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (4, 0), (4, 1), (5, 2), (5, 3), (4, 5)]
 START5, START6 = [8, 6, 1, 3, 9], [2, 9, 4, 7, 5, 1]
 
-pent = {i: (1.6 * math.cos(math.radians(90 + 72 * i)), 1.6 * math.sin(math.radians(90 + 72 * i))) for i in range(5)}
+pent = {0: (0, 0)}
+pent.update({i: (1.6 * math.cos(math.radians(a)), 1.6 * math.sin(math.radians(a))) for i, a in zip((1, 2, 3, 4), (135, 45, -45, -135))})
 six = {0: (-0.9, 0.7), 1: (0.9, 0.7), 2: (0.9, -0.7), 3: (-0.9, -0.7), 4: (0, 2.1), 5: (0, -2.1)}
 
 CASES = [
-    dict(title="Panel 1: paper's 5-node network", pos=pent, edges=E5, start=START5,
+    dict(title="Panel 1: paper's Fig. 5(a) wheel", pos=pent, edges=E5, start=START5,
          roles={4: ("attacker", "lies at k=4"), 3: ("attacker", "lies at k=13")},
          note="Links are two-way. Every node can be cross-checked by shared neighbours.\n"
               "Both attackers are caught one step after lying; final answer 5.0.", extra=None),
